@@ -56,7 +56,7 @@ abstract class ThriftServerBaseTest extends FunSuite with BeforeAndAfterAll {
     Class.forName(classOf[HiveDriver].getCanonicalName)
     livyConf.set(LivyConf.THRIFT_TRANSPORT_MODE, mode.toString)
     livyConf.set(LivyConf.THRIFT_SERVER_PORT, port)
-
+    livyConf.set(LivyConf.ENABLE_HIVE_CONTEXT, true)
     // Set formatted Spark and Scala version into livy configuration, this will be used by
     // session creation.
     livyConf.set(LIVY_SPARK_VERSION.key, formattedSparkVersion.productIterator.mkString("."))
