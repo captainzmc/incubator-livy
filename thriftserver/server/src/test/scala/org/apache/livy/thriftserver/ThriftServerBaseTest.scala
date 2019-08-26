@@ -56,6 +56,9 @@ abstract class ThriftServerBaseTest extends FunSuite with BeforeAndAfterAll {
     Class.forName(classOf[HiveDriver].getCanonicalName)
     livyConf.set(LivyConf.THRIFT_TRANSPORT_MODE, mode.toString)
     livyConf.set(LivyConf.THRIFT_SERVER_PORT, port)
+    // By default, We should set ENABLE_HIVE_CONTEXT=true to support the creation of Hive tables and the
+    // creation of udf.
+    livyConf.set(LivyConf.ENABLE_HIVE_CONTEXT, true)
 
     // Set formatted Spark and Scala version into livy configuration, this will be used by
     // session creation.
@@ -75,6 +78,7 @@ abstract class ThriftServerBaseTest extends FunSuite with BeforeAndAfterAll {
 
   override def afterAll(): Unit = {
     LivyThriftServer.stopServer()
+    Thread.sleep(5000)
   }
 
   def withJdbcConnection(f: (Connection => Unit)): Unit = {
