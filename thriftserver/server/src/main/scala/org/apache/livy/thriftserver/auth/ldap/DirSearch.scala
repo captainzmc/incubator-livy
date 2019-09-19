@@ -17,7 +17,6 @@
 package org.apache.livy.thriftserver.auth.ldap
 
 import java.io.Closeable
-import java.util
 
 import javax.naming.NamingException
 
@@ -65,7 +64,7 @@ trait DirSearch extends Closeable {
     * @throws NamingException
     */
   @throws(classOf[NamingException])
-  def findGroupsForUser(userDn: String): util.List[String]
+  def findGroupsForUser(userDn: String): List[String]
 
   /**
     * Executes an arbitrary query.
@@ -75,5 +74,5 @@ trait DirSearch extends Closeable {
     * @throws NamingException
     */
   @throws(classOf[NamingException])
-  def executeCustomQuery(query: String): util.List[String]
+  def executeCustomQuery(query: String): List[String]
 }

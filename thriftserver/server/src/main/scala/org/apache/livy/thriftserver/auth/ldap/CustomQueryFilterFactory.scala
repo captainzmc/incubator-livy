@@ -28,7 +28,7 @@ class CustomQueryFilterFactory extends FilterFactory {
 
   def getInstance(conf: LivyConf): Filter = {
 
-    // We don't support custom query at the moment now. If it needed can be added here.
+    // TODO We don't support custom query at the moment now. If it needed can be added here.
     // The CustomQueryFilter should have a higher priority than the other filters.
     // Set the CustomQueryFilter to invalidate the other filters.
     null
