@@ -20,7 +20,6 @@ import java.io.Closeable
 
 import javax.naming.NamingException
 
-
 /**
   * The object used for executing queries on the Directory Service.
   */

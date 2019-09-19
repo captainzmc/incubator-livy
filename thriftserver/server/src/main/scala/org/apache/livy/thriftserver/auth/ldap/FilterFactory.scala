@@ -18,7 +18,6 @@ package org.apache.livy.thriftserver.auth.ldap
 
 import org.apache.livy.LivyConf
 
-
 /**
   * Factory for the filter.
   */

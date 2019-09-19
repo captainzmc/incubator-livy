@@ -16,15 +16,8 @@
  */
 package org.apache.livy.thriftserver.auth.ldap
 
-import java.util.{Collections, Collection, ArrayList}
-
-import javax.management.Query
-import javax.naming.NamingEnumeration
 import javax.naming.NamingException
 import javax.naming.directory.DirContext
-import javax.naming.directory.SearchResult
-
-import scala.collection.JavaConversions._
 
 import org.apache.livy.{LivyConf, Logging}
 /**

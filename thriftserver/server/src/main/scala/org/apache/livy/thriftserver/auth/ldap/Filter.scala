@@ -18,7 +18,6 @@ package org.apache.livy.thriftserver.auth.ldap
 
 import javax.security.sasl.AuthenticationException
 
-
 /**
   * The object that filters LDAP users.
   * <br>

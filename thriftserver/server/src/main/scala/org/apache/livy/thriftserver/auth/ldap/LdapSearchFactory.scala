@@ -20,9 +20,9 @@ import java.util.{Hashtable}
 
 import javax.naming.Context
 import javax.naming.NamingException
-import javax.naming.directory.DirContext
 import javax.naming.directory.InitialDirContext
 import javax.security.sasl.AuthenticationException
+
 import org.apache.livy.{LivyConf, Logging}
 
 /**

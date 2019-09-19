@@ -19,7 +19,6 @@ package org.apache.livy.thriftserver.auth.ldap
 import javax.security.sasl.AuthenticationException
 import org.apache.livy.LivyConf
 
-
 /**
   * A factory for DirSearch.
   */

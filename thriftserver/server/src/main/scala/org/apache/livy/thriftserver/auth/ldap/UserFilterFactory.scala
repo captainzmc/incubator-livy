@@ -17,17 +17,17 @@
 package org.apache.livy.thriftserver.auth.ldap
 
 
-import java.util.{Collection, HashSet, List}
+import java.util.Collection
 
 import javax.security.sasl.AuthenticationException
-
 import org.apache.hadoop.util.StringUtils
 import org.apache.livy.{LivyConf, Logging}
 
+import scala.collection.mutable
+
 
 /**
-  * A factory for a {@link Filter} based on a list of allowed users.
-  * <br>
+  * A factory for a Filter based on a list of allowed users.
   * The produced filter object filters out all users that are not on the provided in
   * Livy configuration list.
   *
@@ -35,9 +35,9 @@ import org.apache.livy.{LivyConf, Logging}
   */
 object UserFilterFactory extends Logging{
 
-  final private class UserFilter(val userFilter: Collection[String]) extends Filter {
+  final private class UserFilter(val userFilter: List[String]) extends Filter {
 
-    private var userFilterSet = new HashSet[String]
+    private var userFilterSet = mutable.HashSet[String]()
     for (userFilterItem:String <- userFilter) {
       userFilterSet.add(userFilterItem.toLowerCase)
     }
@@ -58,8 +58,8 @@ object UserFilterFactory extends Logging{
 class UserFilterFactory extends FilterFactory {
 
   def getInstance(conf: LivyConf): Filter = {
-    val userFilter:Collection[String] =
-      StringUtils.getStringCollection(conf.get(LivyConf.THRIFT_LDAP_AUTHENTICATION_USERFILTER))
+    val userFilter:List[String] = conf.get(LivyConf.THRIFT_LDAP_AUTHENTICATION_USERFILTER)
+      .split(",").toList
     if (userFilter.isEmpty) {
       null
     } else {

@@ -49,13 +49,13 @@ object LdapAuthenticationProviderImpl {
 
   // Initialize the FilterFactory List
   var factories: List[FilterFactory] = List[FilterFactory](
-    new ChainFilterFactory(chainFactories.asJava), new CustomQueryFilterFactory)
+    new ChainFilterFactory(chainFactories), new CustomQueryFilterFactory)
 
-  private val filterFactories = Collections.unmodifiableList[FilterFactory](factories.asJava)
+//  private val filterFactories = Collections.unmodifiableList[FilterFactory](factories.asJava)
 
   private def resolveFilter(conf: LivyConf): Filter = {
     var filter: Filter = null
-    for (filterProvider: FilterFactory <- filterFactories) {
+    for (filterProvider: FilterFactory <- factories) {
       if (filter != filterProvider.getInstance(conf)) {
         filter = filterProvider.getInstance(conf)
       }

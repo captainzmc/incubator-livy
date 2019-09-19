@@ -16,9 +16,8 @@
  */
 package org.apache.livy.thriftserver.auth.ldap
 
-import java.util.{Collections, List, ArrayList}
+import java.util.Collections
 import javax.security.sasl.AuthenticationException
-
 
 import scala.collection.JavaConversions._
 
@@ -44,12 +43,10 @@ object ChainFilterFactory {
 
 class ChainFilterFactory(val factories: List[FilterFactory]) extends FilterFactory {
 
-  private var chainedFactories = Collections.unmodifiableList(factories)
-
   def getInstance(conf: LivyConf): Filter = {
     var filters =  List[Filter]()
 
-    for (factory <- chainedFactories) {
+    for (factory <- factories) {
       val filter = factory.getInstance(conf)
       if (filter != null) filters.add(filter)
     }

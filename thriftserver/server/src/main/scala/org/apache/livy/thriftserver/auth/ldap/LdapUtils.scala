@@ -16,8 +16,6 @@
  */
 package org.apache.livy.thriftserver.auth.ldap
 
-import java.util
-import java.util.{Collections, ArrayList}
 import scala.collection.JavaConversions._
 
 import org.apache.commons.lang.StringUtils
@@ -149,56 +147,9 @@ object LdapUtils extends Logging{
     name.contains("=")
   }
 
-//  /**
-//    * Reads and parses DN patterns from Hive configuration.
-//    * <br>
-//    * If no patterns are provided in the configuration, then the base DN will be used.
-//    *
-//    * @param conf Hive configuration
-//    * @param var  variable to be read
-//    * @return a list of DN patterns
-//    * @see HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BASEDN
-//    * @see HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GUIDKEY
-//    * @see HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPDNPATTERN
-//    * @see HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN
-//    */
-//  def parseDnPatterns(conf: LivyConf): List[String] = {
-//    val patternsString = conf.getVar(`var`)
-//    val result = new util.ArrayList[String]
-//    if (StringUtils.isBlank(patternsString)) {
-//      val defaultBaseDn = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BASEDN)
-//      val guidAttr = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GUIDKEY)
-//      if (StringUtils.isNotBlank(defaultBaseDn)) result.add(guidAttr + "=%s," + defaultBaseDn)
-//    }
-//    else {
-//      val patterns = patternsString.split(":")
-//      for (pattern <- patterns) {
-//        if (pattern.contains(",") && pattern.contains("=")) result.add(pattern)
-//        else LOG.warn("Unexpected format for " + `var` + "..ignoring " + pattern)
-//      }
-//    }
-//    result
-//  }
-
   private def patternToBaseDn(pattern: String): String = {
     if (pattern.contains("=%s")) return pattern.split(",", 2)(1)
     pattern
-  }
-
-  /**
-    * Converts a collection of Distinguished Name patterns to a collection of base DNs.
-    *
-    * @param patterns Distinguished Name patterns
-    * @return a list of base DNs
-    * @see HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPDNPATTERN
-    * @see HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN
-    */
-  def patternsToBaseDns(patterns: util.Collection[String]): List[String] = {
-    val result = new util.ArrayList[String]
-    for (pattern <- patterns) {
-      result.add(patternToBaseDn(pattern))
-    }
-    result
   }
 
   /**
