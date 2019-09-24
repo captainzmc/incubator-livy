@@ -37,9 +37,7 @@ import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.livy.Job;
-import org.apache.livy.JobHandle;
-import org.apache.livy.LivyClient;
+import org.apache.livy.*;
 import org.apache.livy.client.common.BufferUtils;
 import org.apache.livy.rsc.driver.AddFileJob;
 import org.apache.livy.rsc.driver.AddJarJob;
@@ -147,6 +145,10 @@ public class RSCClient implements LivyClient {
     } catch (Exception e) {
       connectionError(e);
     }
+  }
+
+  public void setOperationMessage(ConcurrentBoundedLinkedQueue<String> operationMessage) {
+    protocol.setOperationMessages(operationMessage);
   }
 
   private void connectionError(Throwable error) {
@@ -330,6 +332,14 @@ public class RSCClient implements LivyClient {
 
   private class ClientProtocol extends BaseProtocol {
 
+    private final String PROCESS_FORMAT = "stage %3s: percentage: %3d%% active: %s " +
+            "completed: %s failed: %s all: %s";
+    private ConcurrentBoundedLinkedQueue<String> operationMessages;
+
+    public void setOperationMessages(ConcurrentBoundedLinkedQueue<String> operationMessages) {
+      this.operationMessages = operationMessages;
+    }
+
     <T> JobHandleImpl<T> submit(Job<T> job) {
       final String jobId = UUID.randomUUID().toString();
       Object msg = new JobRequest<T>(jobId, job);
@@ -410,6 +420,14 @@ public class RSCClient implements LivyClient {
         }
       } else {
         LOG.warn("Received result for unknown job {}", msg.id);
+      }
+    }
+
+    private void handle(ChannelHandlerContext ctx, JobProcessMessage msg) {
+      if (operationMessages != null) {
+        int percentage = (int) Math.round(msg.completed / (double) msg.all * 100);
+        operationMessages.offer(String.format(PROCESS_FORMAT, msg.stageId, percentage, msg.active,
+                msg.completed, msg.failed, msg.all));
       }
     }
 

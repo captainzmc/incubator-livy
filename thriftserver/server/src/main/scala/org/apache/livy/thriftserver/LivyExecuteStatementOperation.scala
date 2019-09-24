@@ -18,7 +18,7 @@
 package org.apache.livy.thriftserver
 
 import java.security.PrivilegedExceptionAction
-import java.util.concurrent.{ConcurrentLinkedQueue, RejectedExecutionException}
+import java.util.concurrent.RejectedExecutionException
 
 import scala.collection.mutable
 import scala.util.control.NonFatal
@@ -44,14 +44,14 @@ class LivyExecuteStatementOperation(
   /**
    * Contains the messages which have to be sent to the client.
    */
-  private val operationMessages = new ConcurrentLinkedQueue[String]
-
+  private val operationMessages =
+    sessionManager.getSessionInfo(sessionHandle).operationMessages
   // The initialization need to be lazy in order not to block when the instance is created
   private lazy val rpcClient = {
     val sessionState = sessionManager.livySessionState(sessionHandle)
     if (sessionState == CREATION_IN_PROGRESS) {
-      operationMessages.offer(
-        "Livy session has not yet started. Please wait for it to be ready...")
+      operationMessages.foreach(_.offer(
+        "Livy session has not yet started. Please wait for it to be ready..."))
     }
     // This call is blocking, we are waiting for the session to be ready.
     new RpcClient(sessionManager.getLivySession(sessionHandle))
@@ -138,6 +138,10 @@ class LivyExecuteStatementOperation(
     setState(OperationState.RUNNING)
 
     try {
+      operationMessages.foreach(_.offer(s"RSC client is executing SQL query: $statement, " +
+        s"statementId = $statementId, session = " + sessionHandle))
+      val livySession = sessionManager.getLivySession(sessionHandle)
+      operationMessages.foreach(_.offer(s"tracking URL: ${livySession.appInfo.sparkUiUrl.orNull}"))
       rpcClient.executeSql(sessionHandle, statementId, statement).get()
     } catch {
       case e: Throwable =>
@@ -162,6 +166,8 @@ class LivyExecuteStatementOperation(
   override def shouldRunAsync: Boolean = runInBackground
 
   override def getResultSetSchema: Schema = {
+    operationMessages.foreach(
+      _.offer(s"RSC client is fetching result schema for statementId = $statementId"))
     val tableSchema = DataTypeUtils.schemaFromSparkJson(
       rpcClient.fetchResultSchema(sessionHandle, statementId).get())
     // Workaround for operations returning an empty schema (eg. CREATE, INSERT, ...)
@@ -174,6 +180,8 @@ class LivyExecuteStatementOperation(
 
   private def cleanup(state: OperationState) {
     if (statementId != null && rpcClientValid) {
+      operationMessages.foreach(
+        _.offer(s"Cleaning up remote session for statementId = $statementId"))
       val cleaned = rpcClient.cleanupStatement(sessionHandle, statementId).get()
       if (!cleaned) {
         warn(s"Fail to cleanup query $statementId (session = ${sessionHandle.getSessionId}), " +
@@ -189,7 +197,10 @@ class LivyExecuteStatementOperation(
    */
   def getOperationMessages: Seq[String] = {
     def fetchNext(acc: mutable.ListBuffer[String]): Boolean = {
-      val m = operationMessages.poll()
+      if (operationMessages.isEmpty) {
+        return false
+      }
+      val m = operationMessages.get.poll()
       if (m == null) {
         false
       } else {
