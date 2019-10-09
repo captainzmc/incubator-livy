@@ -49,6 +49,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
+import org.apache.spark.SparkStageInfo;
+import org.apache.spark.SparkStatusTracker;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -214,6 +217,51 @@ public class RSCDriver extends BaseProtocol {
     // At this point we install the idle timeout handler, in case the Livy server fails to connect
     // back.
     setupIdleTimeout();
+  }
+
+  /**
+   * Calculate each stage's process and broadcast message to the end user
+   * @param jobId
+   */
+  void handleProcessMessage(String jobId){
+    SparkStatusTracker sparkStatusTracker;
+    // All tasks num of this job
+    int all = 0;
+    // All completed tasks num of this job
+    int completed = 0;
+    String nowActiveJobId = "";
+    synchronized (jcLock){
+      if (jc == null){
+        return;
+      }
+      sparkStatusTracker = jc.sc().sc().statusTracker();
+    }
+
+    int[] allJobIds = sparkStatusTracker.getActiveJobIds();
+    for (int activeJobId: allJobIds) {
+      nowActiveJobId = "Job-" + activeJobId;
+      int[] allStageIds = sparkStatusTracker.getJobInfo(activeJobId).get().stageIds();
+      for (int stageId: allStageIds) {
+        SparkStageInfo stageInfo = sparkStatusTracker.getStageInfo(stageId).get();
+        if (stageInfo != null){
+          all += stageInfo.numTasks();
+          completed += stageInfo.numCompletedTasks();
+        }
+      }
+    }
+
+    int[] activeStageIds = sparkStatusTracker.getActiveStageIds();
+    for (int stageId: activeStageIds) {
+      SparkStageInfo stageInfo = sparkStatusTracker.getStageInfo(stageId).get();
+      if (stageInfo != null){
+        int active = stageInfo.numActiveTasks();
+        int failed = stageInfo.numFailedTasks();
+        if (all == 0){
+          continue;
+        }
+        broadcast(new JobProcessMessage(nowActiveJobId, stageId, completed, active, failed, all));
+      }
+    }
   }
 
   private void registerClient(final Rpc client) {
