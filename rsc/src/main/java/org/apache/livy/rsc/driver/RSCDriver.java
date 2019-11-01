@@ -229,7 +229,6 @@ public class RSCDriver extends BaseProtocol {
     int all = 0;
     // All completed tasks num of this job
     int completed = 0;
-    String nowActiveJobId = "";
     synchronized (jcLock){
       if (jc == null){
         return;
@@ -239,7 +238,6 @@ public class RSCDriver extends BaseProtocol {
 
     int[] allJobIds = sparkStatusTracker.getActiveJobIds();
     for (int activeJobId: allJobIds) {
-      nowActiveJobId = "Job-" + activeJobId;
       int[] allStageIds = sparkStatusTracker.getJobInfo(activeJobId).get().stageIds();
       for (int stageId: allStageIds) {
         SparkStageInfo stageInfo = sparkStatusTracker.getStageInfo(stageId).get();
@@ -259,7 +257,7 @@ public class RSCDriver extends BaseProtocol {
         if (all == 0){
           continue;
         }
-        broadcast(new JobProcessMessage(nowActiveJobId, stageId, completed, active, failed, all));
+        broadcast(new JobProcessMessage(jobId, stageId, completed, active, failed, all));
       }
     }
   }
