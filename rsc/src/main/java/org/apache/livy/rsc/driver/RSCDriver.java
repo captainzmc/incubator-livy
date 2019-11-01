@@ -225,33 +225,18 @@ public class RSCDriver extends BaseProtocol {
    */
   void handleProcessMessage(String jobId){
     SparkStatusTracker sparkStatusTracker;
-    // All tasks num of this job
-    int all = 0;
-    // All completed tasks num of this job
-    int completed = 0;
     synchronized (jcLock){
       if (jc == null){
         return;
       }
       sparkStatusTracker = jc.sc().sc().statusTracker();
     }
-
-    int[] allJobIds = sparkStatusTracker.getActiveJobIds();
-    for (int activeJobId: allJobIds) {
-      int[] allStageIds = sparkStatusTracker.getJobInfo(activeJobId).get().stageIds();
-      for (int stageId: allStageIds) {
-        SparkStageInfo stageInfo = sparkStatusTracker.getStageInfo(stageId).get();
-        if (stageInfo != null){
-          all += stageInfo.numTasks();
-          completed += stageInfo.numCompletedTasks();
-        }
-      }
-    }
-
     int[] activeStageIds = sparkStatusTracker.getActiveStageIds();
     for (int stageId: activeStageIds) {
       SparkStageInfo stageInfo = sparkStatusTracker.getStageInfo(stageId).get();
       if (stageInfo != null){
+        int all = stageInfo.numTasks();
+        int completed = stageInfo.numCompletedTasks();
         int active = stageInfo.numActiveTasks();
         int failed = stageInfo.numFailedTasks();
         if (all == 0){
