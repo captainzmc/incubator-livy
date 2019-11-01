@@ -28,11 +28,12 @@ import org.apache.spark.storage.StorageLevel;
 
 import org.apache.livy.Job;
 import org.apache.livy.JobContext;
+import org.apache.livy.SqlJobStatement;
 
 /**
  * A Job implementation for executing SQL queries in a Livy session.
  */
-public class SqlJob implements Job<Void> {
+public class SqlJob extends SqlJobStatement implements Job<Void>  {
 
   private final String sessionId;
   private final String statementId;
@@ -93,5 +94,9 @@ public class SqlJob implements Job<Void> {
       iter = df.collectAsList().iterator();
       session.registerStatement(statementId, schema, iter, null);
     }
+  }
+  @Override
+  public String getStatementId() {
+    return statementId;
   }
 }
