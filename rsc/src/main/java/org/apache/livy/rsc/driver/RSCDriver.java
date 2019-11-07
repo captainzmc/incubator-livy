@@ -237,8 +237,8 @@ public class RSCDriver extends BaseProtocol {
     String nowActiveJobId = "";
     for (int sparkJobId : jobIdsForGroup) {
       SparkJobInfo jobInfo = sparkStatusTracker.getJobInfo(sparkJobId).get();
-      nowActiveJobId = "Job-" + sparkJobId;
       if (jobInfo != null) {
+        nowActiveJobId = "Job-" + sparkJobId;
         for (int stageId : jobInfo.stageIds()) {
           SparkStageInfo sparkStageInfo = sparkStatusTracker.getStageInfo(stageId).get();
           if (sparkStageInfo != null) {
