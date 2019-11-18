@@ -16,8 +16,7 @@
  */
 package org.apache.livy.server
 
-import scala.collection.mutable.ArrayBuffer
-
+import scala.collection.mutable.{ArrayBuffer, Set}
 import org.apache.livy.LivyConf
 import org.apache.livy.LivyConf._
 import org.apache.livy.Logging
@@ -55,6 +54,10 @@ class ServiceWatch(livyConf: LivyConf, dir: String) extends Logging {
   def contains(sessionId: Int): Boolean = {
     // We have added current node into consistentHash
     consistentHash.searchNode(sessionId.toString).get == serverIP
+  }
+
+  def getNodes(): Set[String] = {
+    consistentHash.getNodes
   }
 
   def search(sessionId: Int, path: String = dir): (String, Int) = {

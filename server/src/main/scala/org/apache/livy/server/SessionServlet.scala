@@ -49,6 +49,7 @@ abstract class SessionServlet[S <: Session, R <: RecoveryMetadata](
   with UrlGeneratorSupport
   with GZipSupport
 {
+  val currentIp = livyConf.get(LivyConf.SERVER_HOST)
   /**
    * Creates a new session based on the current request. The implementation is responsible for
    * parsing the body of the request.
@@ -66,6 +67,14 @@ abstract class SessionServlet[S <: Session, R <: RecoveryMetadata](
 
   before() {
     contentType = "application/json"
+  }
+
+  get("/nodes") {
+    if(sessionManager.serviceWatch.isDefined) {
+      Map("nodes" -> sessionManager.serviceWatch.get.getNodes)
+    } else {
+      Map("nodes" -> Set(currentIp))
+    }
   }
 
   get("/") {
